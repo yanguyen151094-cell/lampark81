@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+.vercel/
+.env
+*.log
+.DS_Store
+.vscode/
