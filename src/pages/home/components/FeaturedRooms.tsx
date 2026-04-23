@@ -1,88 +1,143 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import { supabase, Room } from '../../../lib/supabase';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLang } from '@/context/LanguageContext';
+import { useDataStore } from '@/context/DataStore';
+import RoomDetailModal from './RoomDetailModal';
+
+function formatPrice(price: number, lang: string): string {
+  if (lang === 'en') {
+    return `${(price / 1000000).toFixed(1).replace('.0', '')}M VND/mo`;
+  }
+  return `${(price / 1000000).toFixed(1).replace('.0', '')} triệu/tháng`;
+}
 
 export default function FeaturedRooms() {
-  const [visible, setVisible] = useState(false);
-  const [featured, setFeatured] = useState<Room[]>([]);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.1 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order')
-        .limit(3);
-      setFeatured(data ?? []);
-    };
-    fetch();
-  }, []);
+  const navigate = useNavigate();
+  const { rooms } = useDataStore();
+  const featured = rooms.filter((r) => r.featured);
+  const [selectedRoom, setSelectedRoom] = useState<typeof rooms[0] | null>(null);
+  const { lang } = useLang();
 
   return (
-    <section ref={ref} className="py-20 md:py-28 bg-cream-dark px-6 md:px-10 lg:px-16">
-      <div className="max-w-6xl mx-auto">
-        <div className={`flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-4 transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+    <section className="py-16 md:py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <span className="inline-block text-gold text-xs font-medium tracking-[0.25em] uppercase border border-gold/30 px-4 py-1.5 rounded-full mb-4">
-              Phòng Nổi Bật
+            <span className="inline-block bg-amber-100 text-amber-600 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+              {lang === 'en' ? 'Featured Rooms' : 'Phòng nổi bật'}
             </span>
-            <h2 className="font-serif text-3xl md:text-5xl text-brown font-bold">
-              Không Gian Nghỉ Dưỡng<br />
-              <span className="italic font-normal">Được Yêu Thích</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+              {lang === 'en' ? (
+                <>Most<br /><span className="text-amber-500">Loved Rooms</span></>
+              ) : (
+                <>Phòng Được<br /><span className="text-amber-500">Yêu Thích Nhất</span></>
+              )}
             </h2>
           </div>
-          <Link to="/rooms" className="flex items-center gap-2 text-sm font-medium text-gold hover:text-gold-dark transition-colors whitespace-nowrap cursor-pointer">
-            Xem tất cả phòng <i className="ri-arrow-right-line"></i>
-          </Link>
+          <button
+            onClick={() => navigate('/search')}
+            className="flex items-center gap-2 text-gray-700 hover:text-amber-500 font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap"
+          >
+            {lang === 'en' ? 'View all rooms' : 'Xem tất cả phòng'}
+            <i className="ri-arrow-right-line"></i>
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featured.map((room, i) => (
+        {/* Room Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {featured.map((room) => (
             <div
               key={room.id}
-              className={`group relative rounded-2xl overflow-hidden h-72 md:h-80 cursor-pointer transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-              style={{ transitionDelay: `${i * 150}ms` }}
+              className="bg-white rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300"
+              style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.08)' }}
             >
-              <img
-                src={room.image}
-                alt={room.name}
-                className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <span className="text-xs text-gold/80 font-medium">{room.hotel_name}</span>
-                <h3 className="font-serif text-lg font-bold text-white mb-1">{room.name}</h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-gold font-semibold text-base">{room.price.toLocaleString('vi-VN')}đ</span>
-                    <span className="text-white/60 text-xs"> / đêm</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-white/70 text-xs">
-                    <i className="ri-user-line"></i>
-                    <span>{room.capacity} khách</span>
-                  </div>
+              <div className="relative h-48 overflow-hidden cursor-pointer" onClick={() => setSelectedRoom(room)}>
+                <img
+                  src={room.images[0]}
+                  alt={room.name}
+                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 left-3">
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${room.status === 'available' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                    {room.status === 'available'
+                      ? (lang === 'en' ? 'Available' : 'Còn phòng')
+                      : (lang === 'en' ? 'Booked' : 'Đã đặt')}
+                  </span>
+                </div>
+                <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <i className="ri-image-line text-xs"></i>
+                  {room.images.length}
+                </div>
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-full">
+                    {lang === 'en' ? 'View Photos' : 'Xem ảnh phòng'}
+                  </span>
                 </div>
               </div>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <Link to="/rooms" className="bg-gold text-white text-sm font-medium px-6 py-2.5 rounded-full transform -translate-y-2 group-hover:translate-y-0 transition-transform duration-300 whitespace-nowrap">
-                  Đặt Phòng Này
-                </Link>
+
+              <div className="p-4 md:p-5">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="font-bold text-gray-900 text-sm md:text-base leading-tight">{room.name}</h3>
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                    <i className="ri-star-fill text-amber-400 text-sm"></i>
+                    <span className="text-gray-700 text-sm font-semibold">{room.rating}</span>
+                    <span className="text-gray-400 text-xs">({room.reviewCount})</span>
+                  </div>
+                </div>
+
+                <p className="text-gray-500 text-xs mb-3 line-clamp-2">{room.description}</p>
+
+                <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <i className="ri-ruler-line"></i>
+                    {room.area}m²
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <i className="ri-building-line"></i>
+                    {lang === 'en' ? `Floor ${room.floor}` : `Tầng ${room.floor}`}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {room.amenities.slice(0, 3).map((a) => (
+                    <span key={a} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{a}</span>
+                  ))}
+                  {room.amenities.length > 3 && (
+                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">+{room.amenities.length - 3}</span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-lg font-bold text-gray-900">{formatPrice(room.price, lang)}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedRoom(room)}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs px-3 py-2 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {lang === 'en' ? 'View Room' : 'Xem phòng'}
+                    </button>
+                    <button
+                      onClick={() => navigate('/search')}
+                      className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold text-xs px-3 py-2 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {lang === 'en' ? 'Book Now' : 'Đặt phòng'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {selectedRoom && (
+        <RoomDetailModal
+          room={selectedRoom}
+          onClose={() => setSelectedRoom(null)}
+          onBook={() => navigate('/search')}
+        />
+      )}
     </section>
   );
 }

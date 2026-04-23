@@ -1,25 +1,33 @@
-import Navbar from '../../components/feature/Navbar';
-import Footer from '../../components/feature/Footer';
+import Navbar from '@/components/feature/Navbar';
+import Footer from '@/components/feature/Footer';
+import FloatingContacts from '@/components/feature/FloatingContacts';
+import ChatWidget from '@/components/feature/ChatWidget';
 import HeroSection from './components/HeroSection';
-import BrandSection from './components/BrandSection';
-import PropertiesSection from './components/PropertiesSection';
+import FeaturesSection from './components/FeaturesSection';
 import FeaturedRooms from './components/FeaturedRooms';
-import AmenitiesSection from './components/AmenitiesSection';
-import ReviewsSection from './components/ReviewsSection';
+import GalleryPreview from './components/GalleryPreview';
+import ReelsPreview from './components/ReelsPreview';
+import ReviewsPreview from './components/ReviewsPreview';
+import MapSection from './components/MapSection';
 import CTASection from './components/CTASection';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <main className="bg-cream font-sans">
+    <div className="min-h-screen">
       <Navbar />
-      <HeroSection />
-      <BrandSection />
-      <PropertiesSection />
-      <FeaturedRooms />
-      <AmenitiesSection />
-      <ReviewsSection />
-      <CTASection />
+      <main>
+        <HeroSection />
+        <ReelsPreview />
+        <FeaturesSection />
+        <FeaturedRooms />
+        <GalleryPreview />
+        <ReviewsPreview />
+        <MapSection />
+        <CTASection />
+      </main>
       <Footer />
-    </main>
+      <FloatingContacts />
+      <ChatWidget />
+    </div>
   );
 }

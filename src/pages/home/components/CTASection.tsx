@@ -1,74 +1,50 @@
-import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLang } from '@/context/LanguageContext';
 
 export default function CTASection() {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.1 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+  const navigate = useNavigate();
+  const { lang } = useLang();
 
   return (
-    <section ref={ref} className="py-20 md:py-28 bg-cream px-6 md:px-10 lg:px-16">
-      <div className="max-w-6xl mx-auto">
-        <div className="relative rounded-3xl overflow-hidden">
-          <img
-            src="https://readdy.ai/api/search-image?query=luxury%20hotel%20aerial%20view%2C%20boutique%20hotel%20coastal%20setting%2C%20swimming%20pool%2C%20tropical%20garden%2C%20sea%20in%20background%2C%20warm%20sunset%20golden%20light%2C%20Vietnamese%20coastal%20resort%2C%20professional%20drone%20photography&width=1200&height=500&seq=cta-main&orientation=landscape"
-            alt="The Muse Hotel"
-            className="w-full h-64 md:h-96 object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-brown/80 via-brown/50 to-transparent"></div>
-          <div className={`absolute inset-0 flex flex-col justify-center px-8 md:px-16 transition-all duration-700 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-            <span className="inline-block text-gold text-xs font-medium tracking-[0.25em] uppercase border border-gold/40 px-4 py-1.5 rounded-full mb-4 w-fit">
-              Ưu Đãi Đặc Biệt
-            </span>
-            <h2 className="font-serif text-2xl md:text-4xl text-white font-bold mb-3 max-w-md">
-              Sẵn Sàng Trải Nghiệm<br />
-              <span className="text-gold-light italic font-normal">The Muse Hotel?</span>
-            </h2>
-            <p className="text-white/70 text-sm md:text-base mb-8 max-w-sm leading-relaxed">
-              Đặt phòng ngay hôm nay và nhận ưu đãi đặc biệt. Miễn phí bữa sáng cho 2 khách khi đặt từ 2 đêm.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                to="/rooms"
-                className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-white text-sm font-medium px-8 py-3.5 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer w-fit"
-              >
-                Đặt Phòng Ngay
-                <i className="ri-arrow-right-line"></i>
-              </Link>
-              <a
-                href="tel:0888808818"
-                className="inline-flex items-center gap-2 border border-white/50 hover:border-white text-white text-sm font-medium px-8 py-3.5 rounded-full transition-all duration-200 whitespace-nowrap cursor-pointer w-fit"
-              >
-                <i className="ri-phone-line"></i>
-                Gọi Ngay
-              </a>
-            </div>
-          </div>
-        </div>
+    <section className="relative py-28 md:py-36 overflow-hidden">
+      <img
+        src="https://readdy.ai/api/search-image?query=luxury%20modern%20apartment%20building%20at%20golden%20hour%20sunset%2C%20warm%20orange%20light%2C%20beautiful%20architecture%2C%20premium%20residential%20complex%2C%20Vietnam%20city%20skyline%2C%20dramatic%20sky&width=1920&height=800&seq=cta1&orientation=landscape"
+        alt="CTA Background"
+        className="absolute inset-0 w-full h-full object-cover object-top"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70"></div>
 
-        {/* Trust Badges */}
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { icon: 'ri-medal-line', text: 'Boutique Hotel 4 Sao' },
-            { icon: 'ri-shield-check-line', text: 'An toàn & Sạch sẽ' },
-            { icon: 'ri-customer-service-2-line', text: 'Hỗ trợ 24/7' },
-            { icon: 'ri-refund-2-line', text: 'Hủy phòng linh hoạt' },
-          ].map((badge) => (
-            <div key={badge.text} className="flex items-center gap-3 bg-cream-dark rounded-xl p-4">
-              <div className="w-10 h-10 flex items-center justify-center bg-gold/10 rounded-lg flex-shrink-0">
-                <i className={`${badge.icon} text-gold text-lg`}></i>
-              </div>
-              <span className="text-brown text-sm font-medium">{badge.text}</span>
-            </div>
-          ))}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+        <span className="inline-block bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+          {lang === 'en' ? 'Start today' : 'Bắt đầu ngay hôm nay'}
+        </span>
+        <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
+          {lang === 'en' ? (
+            <>Start Your New Life<br />Today <em className="text-amber-400 not-italic">Right Now</em><br />At LamPark81</>
+          ) : (
+            <>Bắt Đầu Cuộc Sống Mới<br />Của Bạn <em className="text-amber-400 not-italic">Ngay Hôm Nay</em><br />Tại LamPark81</>
+          )}
+        </h2>
+        <p className="text-white/70 text-base md:text-lg mb-10 max-w-xl mx-auto">
+          {lang === 'en'
+            ? 'Hundreds of beautiful rooms waiting for you. Schedule a free room tour, no brokerage fees.'
+            : 'Hàng trăm phòng đẹp đang chờ bạn. Đặt lịch xem phòng miễn phí, không mất phí môi giới.'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={() => navigate('/search')}
+            className="bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold px-10 py-5 rounded-full text-base transition-all hover:scale-105 cursor-pointer whitespace-nowrap"
+            style={{ boxShadow: '0 8px 30px rgba(251,191,36,0.4)' }}
+          >
+            {lang === 'en' ? 'Schedule a Room Tour' : 'Đặt lịch xem phòng'}
+          </button>
+          <a
+            href="tel:0377038202"
+            className="border-2 border-white/60 hover:border-white text-white font-semibold px-10 py-5 rounded-full text-base transition-all hover:bg-white/10 cursor-pointer whitespace-nowrap flex items-center gap-2 justify-center"
+          >
+            <i className="ri-phone-line text-xl"></i>
+            {lang === 'en' ? 'Call Now: 0377 038 202' : 'Gọi ngay: 0377 038 202'}
+          </a>
         </div>
       </div>
     </section>

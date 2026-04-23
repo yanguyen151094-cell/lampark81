@@ -2,17 +2,20 @@ import { BrowserRouter } from "react-router-dom";
 import { AppRoutes } from "./router";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./i18n";
-import FloatingContact from "./components/feature/FloatingContact";
-
+import { LanguageProvider } from "./context/LanguageContext";
+import { DataStoreProvider } from "./context/DataStore";
 
 function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <BrowserRouter basename={__BASE_PATH__}>
-        <AppRoutes />
-        <FloatingContact />
-      </BrowserRouter>
-    </I18nextProvider>
+    <DataStoreProvider>
+      <LanguageProvider>
+        <I18nextProvider i18n={i18n}>
+          <BrowserRouter basename={__BASE_PATH__}>
+            <AppRoutes />
+          </BrowserRouter>
+        </I18nextProvider>
+      </LanguageProvider>
+    </DataStoreProvider>
   );
 }
 

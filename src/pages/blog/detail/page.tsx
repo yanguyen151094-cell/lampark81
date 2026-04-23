@@ -1,78 +1,103 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useEffect } from 'react';
-import Navbar from '../../../components/feature/Navbar';
-import Footer from '../../../components/feature/Footer';
-import { articles } from '../../../mocks/articles';
+import Navbar from '@/components/feature/Navbar';
+import Footer from '@/components/feature/Footer';
+import FloatingContacts from '@/components/feature/FloatingContacts';
+import BlogCard from '../components/BlogCard';
+import { useLang } from '@/context/LanguageContext';
+import { useDataStore } from '@/context/DataStore';
 
 export default function BlogDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const article = articles.find(a => a.slug === slug);
-  const related = articles.filter(a => a.slug !== slug && a.category === article?.category).slice(0, 3);
+  const { lang } = useLang();
+  const { blogs } = useDataStore();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (!article) navigate('/blog');
-  }, [slug, article, navigate]);
+  const post = blogs.find((b) => b.slug === slug);
+  const related = blogs.filter((b) => b.id !== post?.id && b.category === post?.category).slice(0, 3);
 
-  if (!article) return null;
+  useEffect(() => { window.scrollTo(0, 0); }, [slug]);
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">404</h1>
+          <p className="text-gray-500 mb-4">{lang === 'en' ? 'Article not found' : 'Bài viết không tồn tại'}</p>
+          <Link to="/blog" className="text-amber-500 font-semibold hover:underline cursor-pointer">
+            {lang === 'en' ? '← Back to blog' : '← Về danh sách blog'}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const title = lang === 'en' ? post.titleEn : post.titleVi;
+  const content = lang === 'en' ? post.contentEn : post.contentVi;
+  const metaTitle = lang === 'en' ? post.metaTitleEn : post.metaTitleVi;
+  const metaDesc = lang === 'en' ? post.metaDescriptionEn : post.metaDescriptionVi;
+
+  const renderContent = (text: string) => {
+    return text.split('\n').map((line, i) => {
+      if (line.startsWith('## ')) {
+        return <h2 key={i} className="text-xl font-bold text-gray-900 mt-8 mb-3">{line.replace('## ', '')}</h2>;
+      }
+      if (line.startsWith('### ')) {
+        return <h3 key={i} className="text-lg font-bold text-gray-800 mt-6 mb-2">{line.replace('### ', '')}</h3>;
+      }
+      if (line.startsWith('**') && line.endsWith('**')) {
+        return <p key={i} className="font-bold text-gray-900 mt-3">{line.replace(/\*\*/g, '')}</p>;
+      }
+      if (line.startsWith('- ')) {
+        return <li key={i} className="text-gray-700 text-base leading-relaxed ml-4 list-disc">{line.replace('- ', '')}</li>;
+      }
+      if (line.trim() === '') return <div key={i} className="h-2" />;
+      const formatted = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      return <p key={i} className="text-gray-700 text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: formatted }} />;
+    });
+  };
 
   return (
-    <main className="bg-cream font-sans min-h-screen">
+    <div className="min-h-screen bg-gray-50">
+      <title>{metaTitle}</title>
+      <meta name="description" content={metaDesc} />
       <Navbar />
 
-      {/* Cover */}
-      <section className="relative h-72 md:h-[450px] flex items-end overflow-hidden">
-        <img
-          src={article.coverImage}
-          alt={article.title}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-brown/90 via-brown/40 to-transparent"></div>
-        <div className="relative z-10 px-6 md:px-10 lg:px-16 pb-10 w-full">
+      {/* Hero Image */}
+      <div className="relative h-[320px] md:h-[480px] w-full overflow-hidden pt-16">
+        <img src={post.image} alt={title} className="w-full h-full object-cover object-top" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-2 text-white/60 text-sm mb-3 flex-wrap">
-              <Link to="/" className="hover:text-gold transition-colors cursor-pointer">Trang Chủ</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <Link to="/blog" className="hover:text-gold transition-colors cursor-pointer">Blog</Link>
-              <i className="ri-arrow-right-s-line"></i>
-              <span className="text-gold truncate max-w-xs">{article.title}</span>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="bg-amber-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">{post.category}</span>
+              <span className="text-white/70 text-xs flex items-center gap-1">
+                <i className="ri-calendar-line"></i>
+                {new Date(post.date).toLocaleDateString(lang === 'en' ? 'en-US' : 'vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+              <span className="text-white/70 text-xs flex items-center gap-1">
+                <i className="ri-time-line"></i>
+                {post.readTime} {lang === 'en' ? 'min read' : 'phút đọc'}
+              </span>
             </div>
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
-              <span className="bg-gold/80 text-white text-xs px-3 py-1 rounded-full font-medium">{article.category}</span>
-              <span className="text-white/60 text-xs flex items-center gap-1"><i className="ri-time-line"></i>{article.readTime} phút đọc</span>
-              <span className="text-white/60 text-xs">{new Date(article.date).toLocaleDateString('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-            </div>
-            <h1 className="font-serif text-2xl md:text-4xl text-white font-bold leading-snug max-w-3xl">{article.title}</h1>
+            <h1 className="text-2xl md:text-4xl font-black text-white leading-tight">{title}</h1>
           </div>
         </div>
-      </section>
+      </div>
 
-      <div className="px-6 md:px-10 lg:px-16 py-12 md:py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-            {/* Main Content */}
-            <article className="lg:col-span-2">
-              <p className="text-brown/70 text-base leading-relaxed italic mb-8 border-l-4 border-gold pl-5">{article.excerpt}</p>
-
-              <div
-                className="prose prose-sm max-w-none text-brown/70 leading-relaxed
-                  [&_h2]:font-serif [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:text-brown [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
-                  [&_h3]:font-serif [&_h3]:text-lg [&_h3]:text-brown [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
-                  [&_p]:mb-4 [&_p]:leading-relaxed
-                  [&_ul]:mb-4 [&_ul]:pl-5 [&_ul]:space-y-1
-                  [&_li]:text-brown/70 [&_li]:text-sm
-                  [&_strong]:text-brown [&_strong]:font-semibold
-                  [&_em]:text-gold [&_em]:not-italic [&_em]:font-medium"
-                dangerouslySetInnerHTML={{ __html: article.content }}
-              />
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl p-6 md:p-10" style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.07)' }}>
+              <div className="prose max-w-none space-y-2">
+                {renderContent(content)}
+              </div>
 
               {/* Tags */}
-              <div className="mt-10 pt-6 border-t border-cream-dark">
+              <div className="mt-8 pt-6 border-t border-gray-100">
                 <div className="flex flex-wrap gap-2">
-                  {article.tags.map(tag => (
-                    <span key={tag} className="text-xs bg-cream-dark px-3 py-1 rounded-full text-brown/60 cursor-pointer hover:bg-gold/10 hover:text-gold transition-colors">
+                  {post.tags.map((tag) => (
+                    <span key={tag} className="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-full">
                       #{tag}
                     </span>
                   ))}
@@ -80,109 +105,127 @@ export default function BlogDetailPage() {
               </div>
 
               {/* Share */}
-              <div className="mt-8 p-5 bg-white rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-brown mb-1">Chia sẻ bài viết</p>
-                  <p className="text-xs text-brown/40">Hữu ích? Chia sẻ với bạn bè của bạn!</p>
-                </div>
-                <div className="flex gap-3">
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <p className="text-sm font-semibold text-gray-600 mb-3">{lang === 'en' ? 'Share article:' : 'Chia sẻ bài viết:'}</p>
+                <div className="flex items-center gap-3">
                   <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                    href={`https://www.facebook.com/share/1HtJrPrJY1/?mibextid=wwXIfr`}
                     target="_blank"
                     rel="nofollow noreferrer"
-                    className="w-9 h-9 flex items-center justify-center bg-[#1877F2]/10 text-[#1877F2] rounded-lg hover:bg-[#1877F2] hover:text-white transition-colors cursor-pointer"
+                    className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-amber-400 hover:text-gray-900 text-gray-600 rounded-full transition-all cursor-pointer"
                   >
-                    <i className="ri-facebook-fill text-sm"></i>
+                    <i className="ri-facebook-fill text-base"></i>
                   </a>
                   <a
-                    href={`https://zalo.me/share/url?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(article.title)}`}
+                    href={`https://zalo.me/0377038202`}
                     target="_blank"
                     rel="nofollow noreferrer"
-                    className="w-9 h-9 flex items-center justify-center bg-gold/10 text-gold rounded-lg hover:bg-gold hover:text-white transition-colors cursor-pointer"
+                    className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-amber-400 hover:text-gray-900 rounded-full transition-all cursor-pointer"
                   >
-                    <i className="ri-chat-3-fill text-sm"></i>
+                    <span className="font-black text-sm text-blue-600">Z</span>
                   </a>
                 </div>
               </div>
-            </article>
+            </div>
 
-            {/* Sidebar */}
-            <aside className="lg:col-span-1 space-y-6">
-              {/* Booking CTA */}
-              <div className="bg-muse-green rounded-2xl p-6 text-white">
-                <h3 className="font-serif text-lg font-bold mb-2">Đặt Phòng Tại Đồi Rồng</h3>
-                <p className="text-white/60 text-xs mb-5">The Muse Hotel Hải Phòng – Boutique hotel ngay tại khu du lịch quốc tế Đồi Rồng</p>
-                <Link
-                  to="/rooms"
-                  className="w-full flex items-center justify-center gap-2 bg-gold hover:bg-gold-dark text-white text-sm font-medium py-3 rounded-full transition-colors whitespace-nowrap cursor-pointer mb-3"
-                >
-                  Xem Phòng & Giá <i className="ri-arrow-right-line"></i>
-                </Link>
-                <a
-                  href="https://zalo.me/0888808818"
-                  target="_blank"
-                  rel="nofollow noreferrer"
-                  className="w-full flex items-center justify-center gap-2 border border-white/30 text-white hover:border-gold hover:text-gold text-sm font-medium py-3 rounded-full transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  <i className="ri-chat-3-line"></i> Tư Vấn Zalo
-                </a>
-              </div>
-
-              {/* Contact Quick */}
-              <div className="bg-white rounded-2xl p-6 border border-cream-dark">
-                <h3 className="font-serif text-base font-bold text-brown mb-4">Liên Hệ Nhanh</h3>
-                <div className="space-y-3">
-                  <a href="tel:0888808818" className="flex items-center gap-3 text-sm text-brown/70 hover:text-gold transition-colors cursor-pointer">
-                    <div className="w-8 h-8 flex items-center justify-center bg-gold/10 rounded-lg flex-shrink-0">
-                      <i className="ri-phone-line text-gold text-sm"></i>
-                    </div>
-                    088.880.8818
-                  </a>
-                  <a href="https://www.facebook.com/themusehotelhaiphong" target="_blank" rel="nofollow noreferrer" className="flex items-center gap-3 text-sm text-brown/70 hover:text-gold transition-colors cursor-pointer">
-                    <div className="w-8 h-8 flex items-center justify-center bg-gold/10 rounded-lg flex-shrink-0">
-                      <i className="ri-facebook-line text-gold text-sm"></i>
-                    </div>
-                    Facebook Fanpage
-                  </a>
-                  <a href="https://zalo.me/0888808818" target="_blank" rel="nofollow noreferrer" className="flex items-center gap-3 text-sm text-brown/70 hover:text-gold transition-colors cursor-pointer">
-                    <div className="w-8 h-8 flex items-center justify-center bg-gold/10 rounded-lg flex-shrink-0">
-                      <i className="ri-chat-3-line text-gold text-sm"></i>
-                    </div>
-                    Zalo: 088.880.8818
-                  </a>
-                </div>
-              </div>
-
-              {/* Related Posts */}
-              {related.length > 0 && (
-                <div className="bg-white rounded-2xl p-6 border border-cream-dark">
-                  <h3 className="font-serif text-base font-bold text-brown mb-4">Bài Viết Liên Quan</h3>
-                  <div className="space-y-4">
-                    {related.map(rel => (
-                      <Link key={rel.id} to={`/blog/${rel.slug}`} className="flex gap-3 group cursor-pointer">
-                        <div className="w-16 h-14 flex-shrink-0 rounded-lg overflow-hidden">
-                          <img src={rel.coverImage} alt={rel.title} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-brown/80 font-medium leading-snug group-hover:text-gold transition-colors line-clamp-2">{rel.title}</p>
-                          <p className="text-xs text-brown/40 mt-1">{rel.readTime} phút đọc</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* All Articles */}
-              <Link to="/blog" className="block w-full text-center border border-gold text-gold hover:bg-gold hover:text-white text-sm font-medium py-3 rounded-full transition-colors cursor-pointer whitespace-nowrap">
-                Xem Tất Cả Bài Viết
+            {/* Back */}
+            <div className="mt-6">
+              <Link
+                to="/blog"
+                className="inline-flex items-center gap-2 text-amber-600 font-semibold text-sm hover:text-amber-700 cursor-pointer"
+              >
+                <i className="ri-arrow-left-line"></i>
+                {lang === 'en' ? 'Back to all articles' : 'Xem tất cả bài viết'}
               </Link>
-            </aside>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* CTA */}
+            <div
+              className="rounded-2xl p-6 text-white"
+              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+            >
+              <h3 className="font-bold text-lg text-gray-900 mb-2">LamPark81</h3>
+              <p className="text-gray-900/80 text-sm mb-4">
+                {lang === 'en'
+                  ? 'Modern apartments in central HCMC. Book now for the best price!'
+                  : 'Phòng hiện đại tại trung tâm TP.HCM. Đặt phòng ngay để có giá tốt nhất!'}
+              </p>
+              <Link
+                to="/search"
+                className="block text-center bg-gray-900 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                {lang === 'en' ? 'Book Now' : 'Đặt phòng ngay'}
+              </Link>
+              <a
+                href="tel:0377038202"
+                className="block text-center mt-2 text-gray-900 font-semibold text-sm py-2 cursor-pointer"
+              >
+                <i className="ri-phone-line mr-1"></i> 0377 038 202
+              </a>
+            </div>
+
+            {/* Related Articles */}
+            {related.length > 0 && (
+              <div>
+                <h3 className="font-bold text-gray-900 text-base mb-4">
+                  {lang === 'en' ? 'Related Articles' : 'Bài viết liên quan'}
+                </h3>
+                <div className="space-y-4">
+                  {related.map((r) => (
+                    <Link
+                      key={r.id}
+                      to={`/blog/${r.slug}`}
+                      className="flex gap-3 group cursor-pointer"
+                    >
+                      <img
+                        src={r.image}
+                        alt={lang === 'en' ? r.titleEn : r.titleVi}
+                        className="w-20 h-16 object-cover object-top rounded-xl flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-amber-600 transition-colors leading-snug">
+                          {lang === 'en' ? r.titleEn : r.titleVi}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                          <i className="ri-time-line"></i>
+                          {r.readTime} {lang === 'en' ? 'min' : 'phút'}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All blogs */}
+            <div className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+              <h3 className="font-bold text-gray-900 text-base mb-4">
+                {lang === 'en' ? 'Recent Articles' : 'Bài viết mới nhất'}
+              </h3>
+              <div className="space-y-3">
+                {blogs.slice(0, 5).map((b) => (
+                  <Link
+                    key={b.id}
+                    to={`/blog/${b.slug}`}
+                    className="flex items-start gap-2 group cursor-pointer"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></div>
+                    <p className="text-sm text-gray-600 group-hover:text-amber-600 transition-colors line-clamp-2 leading-snug">
+                      {lang === 'en' ? b.titleEn : b.titleVi}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <Footer />
-    </main>
+      <FloatingContacts />
+    </div>
   );
 }

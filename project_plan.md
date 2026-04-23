@@ -1,92 +1,75 @@
-# The Muse Hotel Hai Phong — Project Plan
+# LamPark81 - Website Cho Thuê Phòng
 
-## 1. Project Description
-**The Muse Hotel Hai Phong** là website giới thiệu và đặt phòng cho chuỗi boutique hotel tại khu đô thị quốc tế Đồi Rồng, Đồ Sơn, Hải Phòng. Gồm 3 cơ sở: The Muse 1, The Muse 2, The Muse 3.
+## 1. Mô Tả Dự Án
+Website cho thuê phòng tại LamPark81 - giao diện hiện đại, đầy đủ chức năng tìm kiếm, đặt phòng, gallery ảnh, đánh giá, bản đồ, admin dashboard, chatbot, video reels và kênh liên hệ đa nền tảng (Zalo, SĐT, Facebook).
 
-**Target users:** Khách du lịch trong nước và quốc tế tìm kiếm chỗ lưu trú cao cấp tại Hải Phòng.
-**Core value:** Trải nghiệm boutique hotel sang trọng, phong cách tối giản hiện đại, thiên nhiên ven biển.
+**Đối tượng**: Người tìm phòng trọ/căn hộ tại khu vực LamPark81  
+**Giá trị cốt lõi**: Trải nghiệm đặt phòng trực tuyến nhanh chóng, minh bạch, tiện lợi
 
----
+## 2. Cấu Trúc Trang
+- `/` - Trang chủ (Home)
+- `/search` - Tìm kiếm & Đặt phòng
+- `/gallery` - Thư viện ảnh phòng
+- `/reviews` - Đánh giá & Bản đồ
+- `/admin` - Admin Dashboard (quản lý nội dung)
+- `/chat` - Chat & Video Reels
 
-## 2. Page Structure
-- `/` — Trang Chủ (Hero, giới thiệu, 3 cơ sở, phòng nổi bật, tiện ích, đánh giá, CTA)
-- `/properties` — Danh Sách Cơ Sở (3 khách sạn với card + Xem chi tiết)
-- `/properties/:id` — Chi Tiết Cơ Sở (gallery, mô tả, loại phòng, bản đồ, đặt phòng)
-- `/rooms` — Danh Sách Phòng (tất cả loại phòng + giá)
-- `/gallery` — Thư Viện Ảnh
-- `/about` — Giới Thiệu Thương Hiệu
-- `/contact` — Liên Hệ (bản đồ, form, Zalo, WhatsApp)
+## 3. Tính Năng Cốt Lõi
+- [x] Trang chủ đầy đủ: Hero, tìm kiếm nhanh, gallery, tiện ích, đánh giá, bản đồ, CTA, footer
+- [ ] Tìm kiếm & lọc phòng theo giá, loại, ngày
+- [ ] Đặt phòng online với form booking
+- [ ] Gallery ảnh masonry + lightbox
+- [ ] Hệ thống đánh giá (rating + review)
+- [ ] Tích hợp Google Maps
+- [ ] Admin Dashboard: quản lý phòng, ảnh, đánh giá, booking
+- [ ] Chatbot thông minh 24/7
+- [ ] Video Reels (dạng TikTok/Instagram)
+- [ ] Floating contact bar: Zalo, SĐT, Facebook
+- [ ] Live chat widget
+- [ ] Tối ưu mobile & desktop
+- [ ] Tối ưu cho Vercel deployment
 
----
+## 4. Mô Hình Dữ Liệu (Mock Data)
+### Phòng (rooms)
+- id, name, type, price, area, floor, status, images[], amenities[], description
 
-## 3. Core Features
-- [x] Navbar cố định + responsive mobile menu
-- [x] Trang chủ đầy đủ sections
-- [x] Danh sách 3 cơ sở
-- [x] Trang chi tiết cơ sở
-- [x] Danh sách phòng với giá
-- [x] Thư viện ảnh
-- [x] Trang giới thiệu
-- [x] Trang liên hệ với form
-- [x] Form đặt phòng (Readdy Form)
-- [x] Form liên hệ (Readdy Form)
-- [ ] Admin panel (Phase 2 — cần Supabase)
+### Đánh giá (reviews)
+- id, roomId, author, avatar, rating, content, date, images[]
 
----
+### Booking
+- id, roomId, guestName, phone, email, checkIn, checkOut, status, note
 
-## 4. Data Model Design
-Hiện tại dùng mock data. Khi kết nối Supabase (Phase 2):
+### Video Reels
+- id, title, thumbnail, videoUrl, views, likes
 
-### Table: properties
-| Field | Type | Description |
-|-------|------|-------------|
-| id | text | slug (muse-1, muse-2, muse-3) |
-| name | text | Tên cơ sở |
-| description | text | Mô tả |
-| address | text | Địa chỉ |
-| images | text[] | Danh sách URL ảnh |
+## 5. Tích Hợp Bên Thứ Ba
+- Supabase: Chưa kết nối - dùng mock data trước
+- Google Maps: Embed iframe
+- Zalo/Facebook: Link liên hệ trực tiếp
+- Vercel: Tối ưu build & deploy
 
-### Table: rooms
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| property_id | text | Cơ sở |
-| name | text | Tên phòng |
-| price | numeric | Giá/đêm |
-| capacity | int | Sức chứa |
-| amenities | text[] | Tiện ích |
+## 6. Kế Hoạch Phát Triển
 
-### Table: bookings
-| Field | Type | Description |
-|-------|------|-------------|
-| id | uuid | Primary key |
-| name | text | Tên khách |
-| email | text | Email |
-| checkin | date | Ngày nhận phòng |
-| checkout | date | Ngày trả phòng |
-| property_id | text | Cơ sở |
-| room_id | uuid | Phòng |
+### Phase 1: Trang Chủ (Home) ✅
+- Mục tiêu: Xây dựng trang chủ đầy đủ, đẹp, ấn tượng
+- Deliverable: Hero, Search bar, Features, Gallery preview, Reels preview, Reviews, Map, CTA, Footer, Floating contacts
 
----
+### Phase 2: Tìm Kiếm & Đặt Phòng
+- Mục tiêu: Trang tìm kiếm với filter và form đặt phòng
+- Deliverable: Search filters, Room list, Room detail, Booking form
 
-## 5. Backend / Third-party Integration Plan
-- **Supabase**: Phase 2 — quản lý ảnh, thông tin phòng, đặt phòng
-- **Shopify**: Không cần
-- **Stripe**: Không cần (thanh toán trực tiếp hoặc qua Zalo/WhatsApp)
-- **Readdy Form**: Dùng cho form liên hệ và form đặt phòng
+### Phase 3: Gallery Phòng
+- Mục tiêu: Thư viện ảnh đầy đủ với lightbox
+- Deliverable: Masonry gallery, Lightbox, Category filter
 
----
+### Phase 4: Đánh Giá & Bản Đồ
+- Mục tiêu: Hệ thống review và bản đồ vị trí
+- Deliverable: Review list, Rating system, Google Maps embed
 
-## 6. Development Phase Plan
+### Phase 5: Admin Dashboard
+- Mục tiêu: Quản lý toàn bộ nội dung website
+- Deliverable: Quản lý phòng, ảnh, booking, review
 
-### Phase 1: Frontend UI (Hiện tại)
-- Mục tiêu: Xây dựng toàn bộ giao diện với mock data
-- Deliverable: 7 trang hoàn chỉnh, responsive, đẹp
-
-### Phase 2: Admin & Data Management (Tiếp theo)
-- Mục tiêu: Tích hợp Supabase để quản lý ảnh, phòng, đặt chỗ
-- Deliverable: Admin panel, upload ảnh, quản lý phòng
-
-### Phase 3: SEO & Optimization
-- Mục tiêu: Tối ưu SEO, tốc độ tải trang
-- Deliverable: Meta tags, structured data, performance
+### Phase 6: Chat & Reels
+- Mục tiêu: Chat widget và video reels
+- Deliverable: Chatbot, Live chat, Video reels section
