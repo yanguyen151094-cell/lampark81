@@ -89,7 +89,7 @@ export default function ChatReelsPage() {
           <p className="text-gray-400 mb-8">Đội ngũ hỗ trợ 24/7 luôn sẵn sàng giúp bạn</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="https://zalo.me/0377028202"
+              href="https://zalo.me/0123456789"
               target="_blank"
               rel="nofollow noreferrer"
               className="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white font-bold px-8 py-4 rounded-full transition-all hover:scale-105 cursor-pointer whitespace-nowrap"
@@ -98,11 +98,11 @@ export default function ChatReelsPage() {
               Chat Zalo
             </a>
             <a
-              href="tel:0377028202"
+              href="tel:0123456789"
               className="flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-full transition-all hover:scale-105 cursor-pointer whitespace-nowrap"
             >
               <i className="ri-phone-fill text-xl"></i>
-              Gọi: 0377 028 202
+              Gọi: 0123 456 789
             </a>
             <a
               href="https://facebook.com/lampark81"

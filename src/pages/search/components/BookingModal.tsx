@@ -26,7 +26,7 @@ export default function BookingModal({ room, onClose }: Props) {
       data.append(key, value.toString());
     });
     data.append('room_name', room.name);
-    data.append('room_price', `${room.price / 1000000} triệu/tháng`);
+    data.append('room_price', `${room.price / 1000000} triệu/đêm`);
 
     try {
       await fetch('https://readdy.ai/api/form/d7hvt7c6o6v9400gq81g', {
@@ -95,7 +95,7 @@ export default function BookingModal({ room, onClose }: Props) {
                   name="phone"
                   required
                   type="tel"
-                  placeholder="0377 028 202"
+                  placeholder="0123 456 789"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -123,15 +123,17 @@ export default function BookingModal({ room, onClose }: Props) {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Thời hạn thuê</label>
+                <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Số đêm ở</label>
                 <select
                   name="duration"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400 cursor-pointer"
                 >
-                  <option value="3 tháng">3 tháng</option>
-                  <option value="6 tháng">6 tháng</option>
-                  <option value="12 tháng">12 tháng</option>
-                  <option value="Dài hạn">Dài hạn</option>
+                  <option value="1 đêm">1 đêm</option>
+                  <option value="2 đêm">2 đêm</option>
+                  <option value="3 đêm">3 đêm</option>
+                  <option value="1 tuần">1 tuần (7 đêm)</option>
+                  <option value="2 tuần">2 tuần (14 đêm)</option>
+                  <option value="1 tháng">1 tháng (30 đêm)</option>
                 </select>
               </div>
             </div>
@@ -151,9 +153,9 @@ export default function BookingModal({ room, onClose }: Props) {
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Giá phòng</span>
-                <span className="font-bold text-gray-900">{(room.price / 1000000).toFixed(1)} triệu/tháng</span>
+                <span className="font-bold text-gray-900">{(room.price / 1000000).toFixed(1)} triệu/đêm</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Đặt cọc 1 tháng tiền thuê khi ký hợp đồng</p>
+              <p className="text-xs text-gray-500 mt-1">Thanh toán trước khi nhận phòng</p>
             </div>
 
             <button

@@ -6,9 +6,9 @@ import RoomDetailModal from './RoomDetailModal';
 
 function formatPrice(price: number, lang: string): string {
   if (lang === 'en') {
-    return `${(price / 1000000).toFixed(1).replace('.0', '')}M VND/mo`;
+    return `${(price / 1000000).toFixed(1).replace('.0', '')}M VND/night`;
   }
-  return `${(price / 1000000).toFixed(1).replace('.0', '')} triệu/tháng`;
+  return `${(price / 1000000).toFixed(1).replace('.0', '')} triệu/đêm`;
 }
 
 export default function FeaturedRooms() {
