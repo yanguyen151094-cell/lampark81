@@ -5,7 +5,7 @@ import { useDataStore } from '@/context/DataStore';
 type Room = typeof initialRooms[0];
 
 function formatPrice(price: number): string {
-  return (price / 1000000).toFixed(1) + ' triệu';
+  return price.toLocaleString('vi-VN') + ' VND';
 }
 
 export default function AdminRooms() {
@@ -197,7 +197,7 @@ export default function AdminRooms() {
                   <td className="px-5 py-4">
                     <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full capitalize">{room.type}</span>
                   </td>
-                  <td className="px-5 py-4 text-sm font-semibold text-gray-900">{formatPrice(room.price)}/đêm</td>
+                  <td className="px-5 py-4 text-sm font-semibold text-gray-900">{formatPrice(room.price)}/Đêm</td>
                   <td className="px-5 py-4">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${room.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                       {room.status === 'available' ? 'Còn phòng' : 'Đã đặt'}
@@ -236,7 +236,7 @@ export default function AdminRooms() {
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${room.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {room.status === 'available' ? 'Còn phòng' : 'Đã đặt'}
                   </span>
-                  <span className="text-xs font-semibold text-gray-900">{formatPrice(room.price)}/đêm</span>
+                  <span className="text-xs font-semibold text-gray-900">{formatPrice(room.price)}/Đêm</span>
                 </div>
               </div>
             </div>
@@ -289,7 +289,7 @@ export default function AdminRooms() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Giá (VNĐ/đêm)</label>
+                  <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Giá (VND/Đêm)</label>
                   <input type="number" value={editing.price} onChange={(e) => setEditing({ ...editing, price: Number(e.target.value) })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400" />
                 </div>
                 <div>

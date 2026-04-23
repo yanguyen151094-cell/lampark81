@@ -45,26 +45,11 @@ function loadLS<T>(key: string, fallback: T[]): T[] {
   return fallback;
 }
 
-// Strip base64 data URLs before saving to localStorage (too large, exceed 5MB quota)
-function stripBase64FromRooms(data: Room[]): Room[] {
-  return data.map((room) => ({
-    ...room,
-    images: room.images.filter((img) => !img.startsWith('data:')),
-  }));
-}
-
 function saveLS<T>(key: string, data: T[]): void {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch {
-    // quota exceeded — try stripped version for rooms
-    try {
-      if (key === LS_ROOMS) {
-        localStorage.setItem(key, JSON.stringify(stripBase64FromRooms(data as Room[])));
-      }
-    } catch {
-      // ignore
-    }
+    // quota exceeded — ignore, data stays in React state for current session
   }
 }
 
@@ -95,7 +80,7 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
     } else {
       localStorage.removeItem(LS_ROOMS_CLEARED);
     }
-    saveLS(LS_ROOMS, stripBase64FromRooms(data));
+    saveLS(LS_ROOMS, data);
   }, []);
 
   const setBlogs = useCallback((data: BlogPost[]) => {

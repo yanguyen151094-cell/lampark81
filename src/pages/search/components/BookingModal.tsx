@@ -153,7 +153,7 @@ export default function BookingModal({ room, onClose }: Props) {
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Giá phòng</span>
-                <span className="font-bold text-gray-900">{(room.price / 1000000).toFixed(1)} triệu/đêm</span>
+                <span className="font-bold text-gray-900">{room.price.toLocaleString('vi-VN')} VND/Đêm</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">Thanh toán trước khi nhận phòng</p>
             </div>

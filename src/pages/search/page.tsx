@@ -10,7 +10,7 @@ import BookingModal from './components/BookingModal';
 import RoomDetailModal from '@/pages/home/components/RoomDetailModal';
 
 function formatPrice(price: number): string {
-  return (price / 1000000).toFixed(1).replace('.0', '') + ' triệu/đêm';
+  return price.toLocaleString('vi-VN') + ' VND/Đêm';
 }
 
 export default function SearchPage() {
