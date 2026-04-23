@@ -12,14 +12,14 @@ interface Message {
 const FAQ_RESPONSES: Record<string, string> = {
   'giá': 'Giá phòng tại LamPark81 dao động từ 2.8 triệu đến 6.5 triệu/tháng tùy loại phòng. Bạn muốn xem chi tiết loại phòng nào?',
   'phòng trống': 'Hiện tại chúng tôi có nhiều phòng trống: Studio A1 (3.5tr), 1PN B2 (5tr), Deluxe C3 (4.2tr), Economy D4 (2.8tr). Bạn muốn đặt lịch xem phòng không?',
-  'đặt phòng': 'Để đặt phòng, bạn có thể: 1) Gọi hotline 0123 456 789, 2) Chat Zalo cùng số, 3) Điền form đặt phòng trên website. Chúng tôi sẽ liên hệ xác nhận trong 30 phút!',
+  'đặt phòng': 'Để đặt phòng, bạn có thể: 1) Gọi hotline 0377 028 202, 2) Chat Zalo cùng số, 3) Điền form đặt phòng trên website. Chúng tôi sẽ liên hệ xác nhận trong 30 phút!',
   'tiện ích': 'LamPark81 có đầy đủ tiện ích: Wifi 100Mbps, Điều hòa, Tủ lạnh, Máy giặt, Bếp từ, Bảo vệ 24/7, Camera an ninh, Thang máy, Bãi xe.',
   'địa chỉ': 'LamPark81 tọa lạc tại 81 Đường LamPark, Phường X, Quận Y, TP.HCM. Gần chợ, trường học và trung tâm thương mại.',
   'giờ': 'LamPark81 mở cửa 24/7! Bảo vệ trực 24/24, bạn có thể vào ra bất kỳ lúc nào.',
   'hợp đồng': 'Hợp đồng thuê tối thiểu 3 tháng. Đặt cọc 1 tháng tiền thuê. Thanh toán hàng tháng. Có thể gia hạn linh hoạt.',
   'wifi': 'Wifi tốc độ cao 100Mbps, miễn phí cho tất cả cư dân. Đường truyền ổn định 24/7.',
   'bãi xe': 'Có bãi xe máy và ô tô. Phí gửi xe máy: 100k/tháng, ô tô: 500k/tháng.',
-  'xem phòng': 'Bạn có thể đặt lịch xem phòng bất kỳ lúc nào! Gọi 0123 456 789 hoặc nhắn Zalo để đặt lịch. Chúng tôi sẽ dẫn bạn tham quan trực tiếp.',
+  'xem phòng': 'Bạn có thể đặt lịch xem phòng bất kỳ lúc nào! Gọi 0377 028 202 hoặc nhắn Zalo để đặt lịch. Chúng tôi sẽ dẫn bạn tham quan trực tiếp.',
 };
 
 const WELCOME_MESSAGE: Message = {
@@ -36,7 +36,7 @@ function getBotResponse(input: string): string {
   for (const [key, response] of Object.entries(FAQ_RESPONSES)) {
     if (lower.includes(key)) return response;
   }
-  return 'Cảm ơn bạn đã liên hệ! Để được tư vấn chi tiết hơn, vui lòng gọi hotline 0123 456 789 hoặc chat Zalo cùng số. Chúng tôi hỗ trợ 24/7!';
+  return 'Cảm ơn bạn đã liên hệ! Để được tư vấn chi tiết hơn, vui lòng gọi hotline 0377 028 202 hoặc chat Zalo cùng số. Chúng tôi hỗ trợ 24/7!';
 }
 
 export default function ChatWidget() {

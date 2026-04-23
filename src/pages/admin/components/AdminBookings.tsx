@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 const mockBookings = [
-  { id: 'BK001', guestName: 'Nguyễn Minh Tuấn', phone: '0901234567', email: 'tuan@email.com', roomName: 'Studio A1', checkIn: '2025-05-01', duration: '6 tháng', status: 'confirmed', note: 'Cần phòng yên tĩnh' },
-  { id: 'BK002', guestName: 'Trần Thị Lan', phone: '0912345678', email: 'lan@email.com', roomName: '1 Phòng Ngủ B2', checkIn: '2025-05-15', duration: '12 tháng', status: 'pending', note: '' },
-  { id: 'BK003', guestName: 'Lê Văn Hùng', phone: '0923456789', email: 'hung@email.com', roomName: 'Deluxe C3', checkIn: '2025-06-01', duration: '3 tháng', status: 'confirmed', note: 'Có xe máy' },
-  { id: 'BK004', guestName: 'Phạm Thu Hương', phone: '0934567890', email: 'huong@email.com', roomName: 'Economy D4', checkIn: '2025-05-20', duration: '6 tháng', status: 'cancelled', note: '' },
-  { id: 'BK005', guestName: 'Hoàng Đức Nam', phone: '0945678901', email: 'nam@email.com', roomName: 'Premium E5', checkIn: '2025-07-01', duration: 'Dài hạn', status: 'pending', note: 'Cần thêm thông tin' },
+  { id: 'BK001', guestName: 'Nguyễn Minh Tuấn', phone: '0377028202', email: 'tuan@email.com', roomName: 'Studio A1', checkIn: '2025-05-01', duration: '6 tháng', status: 'confirmed', note: 'Cần phòng yên tĩnh' },
+  { id: 'BK002', guestName: 'Trần Thị Lan', phone: '0377028202', email: 'lan@email.com', roomName: '1 Phòng Ngủ B2', checkIn: '2025-05-15', duration: '12 tháng', status: 'pending', note: '' },
+  { id: 'BK003', guestName: 'Lê Văn Hùng', phone: '0377028202', email: 'hung@email.com', roomName: 'Deluxe C3', checkIn: '2025-06-01', duration: '3 tháng', status: 'confirmed', note: 'Có xe máy' },
+  { id: 'BK004', guestName: 'Phạm Thu Hương', phone: '0377028202', email: 'huong@email.com', roomName: 'Economy D4', checkIn: '2025-05-20', duration: '6 tháng', status: 'cancelled', note: '' },
+  { id: 'BK005', guestName: 'Hoàng Đức Nam', phone: '0377028202', email: 'nam@email.com', roomName: 'Premium E5', checkIn: '2025-07-01', duration: 'Dài hạn', status: 'pending', note: 'Cần thêm thông tin' },
 ];
 
 type Booking = typeof mockBookings[0];
