@@ -9,10 +9,31 @@ type Room = typeof mockRooms[0];
 type Reel = typeof mockReels[0];
 type Review = typeof mockReviews[0];
 
-const LS_ROOMS = 'lampark81_rooms_v1';
-const LS_BLOGS = 'lampark81_blogs_v1';
-const LS_REELS = 'lampark81_reels_v1';
-const LS_REVIEWS = 'lampark81_reviews_v1';
+// v2 keys: clears any bad/corrupted v1 data on Vercel
+const LS_ROOMS = 'lampark81_rooms_v2';
+const LS_BLOGS = 'lampark81_blogs_v2';
+const LS_REELS = 'lampark81_reels_v2';
+const LS_REVIEWS = 'lampark81_reviews_v2';
+const LS_ROOMS_CLEARED = 'lampark81_rooms_cleared';
+
+// Smart load: if stored value is empty array AND user didn't explicitly clear → use fallback
+function loadRooms(): Room[] {
+  try {
+    const raw = localStorage.getItem(LS_ROOMS);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Room[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      // Empty array: only respect it if user explicitly cleared
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        const wasCleared = localStorage.getItem(LS_ROOMS_CLEARED);
+        return wasCleared ? [] : [...mockRooms];
+      }
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return [...mockRooms];
+}
 
 function loadLS<T>(key: string, fallback: T[]): T[] {
   try {
@@ -24,11 +45,26 @@ function loadLS<T>(key: string, fallback: T[]): T[] {
   return fallback;
 }
 
+// Strip base64 data URLs before saving to localStorage (too large, exceed 5MB quota)
+function stripBase64FromRooms(data: Room[]): Room[] {
+  return data.map((room) => ({
+    ...room,
+    images: room.images.filter((img) => !img.startsWith('data:')),
+  }));
+}
+
 function saveLS<T>(key: string, data: T[]): void {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch {
-    // ignore storage errors
+    // quota exceeded — try stripped version for rooms
+    try {
+      if (key === LS_ROOMS) {
+        localStorage.setItem(key, JSON.stringify(stripBase64FromRooms(data as Room[])));
+      }
+    } catch {
+      // ignore
+    }
   }
 }
 
@@ -46,14 +82,20 @@ interface DataStoreCtx {
 const DataStoreContext = createContext<DataStoreCtx | null>(null);
 
 export function DataStoreProvider({ children }: { children: ReactNode }) {
-  const [rooms, setRoomsState] = useState<Room[]>(() => loadLS(LS_ROOMS, mockRooms));
+  const [rooms, setRoomsState] = useState<Room[]>(() => loadRooms());
   const [blogs, setBlogsState] = useState<BlogPost[]>(() => loadLS(LS_BLOGS, mockBlogs));
   const [reels, setReelsState] = useState<Reel[]>(() => loadLS(LS_REELS, mockReels));
   const [reviews, setReviewsState] = useState<Review[]>(() => loadLS(LS_REVIEWS, mockReviews));
 
   const setRooms = useCallback((data: Room[]) => {
     setRoomsState(data);
-    saveLS(LS_ROOMS, data);
+    // Track if user intentionally cleared all rooms
+    if (data.length === 0) {
+      localStorage.setItem(LS_ROOMS_CLEARED, '1');
+    } else {
+      localStorage.removeItem(LS_ROOMS_CLEARED);
+    }
+    saveLS(LS_ROOMS, stripBase64FromRooms(data));
   }, []);
 
   const setBlogs = useCallback((data: BlogPost[]) => {
@@ -74,8 +116,11 @@ export function DataStoreProvider({ children }: { children: ReactNode }) {
   // Real-time sync across tabs via storage event
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === LS_ROOMS && e.newValue) {
-        try { setRoomsState(JSON.parse(e.newValue)); } catch { /* ignore */ }
+      if (e.key === LS_ROOMS) {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : loadRooms();
+          setRoomsState(parsed);
+        } catch { /* ignore */ }
       }
       if (e.key === LS_BLOGS && e.newValue) {
         try { setBlogsState(JSON.parse(e.newValue)); } catch { /* ignore */ }

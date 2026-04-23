@@ -14,6 +14,12 @@ export default function AdminRooms() {
   const [showForm, setShowForm] = useState(false);
   const [newImages, setNewImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'warn' } | null>(null);
+
+  const showToast = (msg: string, type: 'success' | 'warn' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const handleEdit = (room: Room) => {
     setEditing({ ...room });
@@ -43,6 +49,10 @@ export default function AdminRooms() {
 
   const handleSave = () => {
     if (!editing) return;
+    if (!editing.name.trim()) {
+      showToast('Vui lòng nhập tên phòng!', 'warn');
+      return;
+    }
     const updated = { ...editing, images: [...editing.images, ...newImages] };
     const exists = roomList.find((r) => r.id === updated.id);
     const newList = exists
@@ -52,11 +62,20 @@ export default function AdminRooms() {
     setShowForm(false);
     setEditing(null);
     setNewImages([]);
+    showToast(exists ? 'Cập nhật phòng thành công!' : 'Thêm phòng mới thành công!');
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Xác nhận xóa phòng này?')) {
       setRooms(roomList.filter((r) => r.id !== id));
+      showToast('Đã xóa phòng!');
+    }
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Khôi phục tất cả dữ liệu phòng về mặc định? Dữ liệu hiện tại sẽ bị xóa.')) {
+      setRooms([...initialRooms]);
+      showToast('Đã khôi phục dữ liệu mặc định!');
     }
   };
 
@@ -78,6 +97,9 @@ export default function AdminRooms() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      showToast('⚠️ Ảnh tải lên chỉ hiển thị trong phiên này. Dùng URL ảnh để lưu vĩnh viễn!', 'warn');
+    }
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -90,23 +112,63 @@ export default function AdminRooms() {
   };
 
   return (
-    <div>
+    <div className="relative">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[999] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-semibold shadow-lg transition-all ${
+          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-amber-400 text-gray-900'
+        }`}>
+          <i className={`text-base ${toast.type === 'success' ? 'ri-checkbox-circle-line' : 'ri-error-warning-line'}`}></i>
+          {toast.msg}
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-900">Quản lý phòng</h2>
           <p className="text-gray-500 text-sm">{roomList.length} phòng</p>
         </div>
-        <button
-          onClick={handleAddNew}
-          className="flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold px-4 py-2.5 rounded-xl transition-colors cursor-pointer whitespace-nowrap text-sm"
-        >
-          <i className="ri-add-line"></i>
-          <span className="hidden sm:inline">Thêm phòng mới</span>
-          <span className="sm:hidden">Thêm</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {roomList.length === 0 && (
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-3 py-2.5 rounded-xl transition-colors cursor-pointer whitespace-nowrap text-sm"
+            >
+              <i className="ri-refresh-line"></i>
+              <span className="hidden sm:inline">Khôi phục mặc định</span>
+            </button>
+          )}
+          <button
+            onClick={handleAddNew}
+            className="flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold px-4 py-2.5 rounded-xl transition-colors cursor-pointer whitespace-nowrap text-sm"
+          >
+            <i className="ri-add-line"></i>
+            <span className="hidden sm:inline">Thêm phòng mới</span>
+            <span className="sm:hidden">Thêm</span>
+          </button>
+        </div>
       </div>
 
+      {/* Empty State */}
+      {roomList.length === 0 && (
+        <div className="bg-white rounded-2xl p-16 text-center" style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.06)' }}>
+          <div className="w-16 h-16 flex items-center justify-center bg-amber-50 rounded-2xl mx-auto mb-4">
+            <i className="ri-building-2-line text-3xl text-amber-400"></i>
+          </div>
+          <h3 className="font-bold text-gray-900 mb-2">Chưa có phòng nào</h3>
+          <p className="text-gray-500 text-sm mb-6">Nhấn “Khôi phục mặc định” để lấy lại dữ liệu mẫu hoặc thêm phòng mới</p>
+          <button
+            onClick={handleReset}
+            className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold px-5 py-2.5 rounded-xl text-sm cursor-pointer whitespace-nowrap"
+          >
+            <i className="ri-refresh-line"></i>
+            Khôi phục dữ liệu mặc định
+          </button>
+        </div>
+      )}
+
       {/* Desktop Table */}
+      {roomList.length > 0 && (
       <div className="hidden md:block bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 2px 20px rgba(0,0,0,0.06)' }}>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -158,8 +220,10 @@ export default function AdminRooms() {
           </table>
         </div>
       </div>
+      )}
 
       {/* Mobile Card List */}
+      {roomList.length > 0 && (
       <div className="md:hidden space-y-3">
         {roomList.map((room) => (
           <div key={room.id} className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
@@ -188,6 +252,7 @@ export default function AdminRooms() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Edit Modal */}
       {showForm && editing && (
