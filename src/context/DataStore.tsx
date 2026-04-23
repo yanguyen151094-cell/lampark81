@@ -1,36 +1,35 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { rooms as mockRooms } from '@/mocks/rooms';
 import { blogs as mockBlogs } from '@/mocks/blogs';
 import type { BlogPost } from '@/mocks/blogs';
 import { reels as mockReels } from '@/mocks/reels';
 import { reviews as mockReviews } from '@/mocks/reviews';
+import { idbGet, idbSet } from '@/utils/idb';
 
 type Room = typeof mockRooms[0];
 type Reel = typeof mockReels[0];
 type Review = typeof mockReviews[0];
 
-// v2 keys: clears any bad/corrupted v1 data on Vercel
-const LS_ROOMS = 'lampark81_rooms_v2';
+// IndexedDB key for rooms (unlimited storage for base64 images)
+const IDB_ROOMS_KEY = 'rooms_v1';
+
+// localStorage keys for lightweight data
 const LS_BLOGS = 'lampark81_blogs_v2';
 const LS_REELS = 'lampark81_reels_v2';
 const LS_REVIEWS = 'lampark81_reviews_v2';
-const LS_ROOMS_CLEARED = 'lampark81_rooms_cleared';
 
-// Smart load: if stored value is empty array AND user didn't explicitly clear → use fallback
-function loadRooms(): Room[] {
+// Broadcast key for cross-tab sync
+const LS_SYNC = 'lampark81_sync';
+
+// Load rooms from IndexedDB (fallback to mock data)
+async function loadRoomsAsync(): Promise<Room[]> {
   try {
-    const raw = localStorage.getItem(LS_ROOMS);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Room[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      // Empty array: only respect it if user explicitly cleared
-      if (Array.isArray(parsed) && parsed.length === 0) {
-        const wasCleared = localStorage.getItem(LS_ROOMS_CLEARED);
-        return wasCleared ? [] : [...mockRooms];
-      }
+    const stored = await idbGet<Room[]>(IDB_ROOMS_KEY);
+    if (stored && Array.isArray(stored) && stored.length > 0) {
+      return stored;
     }
   } catch {
-    // ignore parse errors
+    // ignore
   }
   return [...mockRooms];
 }
@@ -67,45 +66,89 @@ interface DataStoreCtx {
 const DataStoreContext = createContext<DataStoreCtx | null>(null);
 
 export function DataStoreProvider({ children }: { children: ReactNode }) {
-  const [rooms, setRoomsState] = useState<Room[]>(() => loadRooms());
+  const [rooms, setRoomsState] = useState<Room[]>([...mockRooms]);
+  const [roomsLoaded, setRoomsLoaded] = useState(false);
   const [blogs, setBlogsState] = useState<BlogPost[]>(() => loadLS(LS_BLOGS, mockBlogs));
   const [reels, setReelsState] = useState<Reel[]>(() => loadLS(LS_REELS, mockReels));
   const [reviews, setReviewsState] = useState<Review[]>(() => loadLS(LS_REVIEWS, mockReviews));
+  const bcRef = useRef<BroadcastChannel | null>(null);
 
-  const setRooms = useCallback((data: Room[]) => {
-    setRoomsState(data);
-    // Track if user intentionally cleared all rooms
-    if (data.length === 0) {
-      localStorage.setItem(LS_ROOMS_CLEARED, '1');
-    } else {
-      localStorage.removeItem(LS_ROOMS_CLEARED);
+  // Load rooms from IndexedDB on mount
+  useEffect(() => {
+    loadRoomsAsync().then((data) => {
+      setRoomsState(data);
+      setRoomsLoaded(true);
+    });
+  }, []);
+
+  // Setup BroadcastChannel for instant cross-tab sync
+  useEffect(() => {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('lampark81_sync');
+      bcRef.current = bc;
+      bc.onmessage = (ev) => {
+        if (ev.data?.type === 'rooms_updated') {
+          loadRoomsAsync().then((data) => {
+            setRoomsState(data);
+          });
+        }
+        if (ev.data?.type === 'blogs_updated' && ev.data?.payload) {
+          setBlogsState(ev.data.payload);
+        }
+        if (ev.data?.type === 'reels_updated' && ev.data?.payload) {
+          setReelsState(ev.data.payload);
+        }
+        if (ev.data?.type === 'reviews_updated' && ev.data?.payload) {
+          setReviewsState(ev.data.payload);
+        }
+      };
+      return () => {
+        bc.close();
+        bcRef.current = null;
+      };
     }
-    saveLS(LS_ROOMS, data);
+  }, []);
+
+  const setRooms = useCallback(async (data: Room[]) => {
+    setRoomsState(data);
+    // Wait for IndexedDB to save BEFORE broadcasting
+    await idbSet(IDB_ROOMS_KEY, data);
+    // Broadcast to other tabs via BroadcastChannel (instant)
+    bcRef.current?.postMessage({ type: 'rooms_updated' });
+    // Fallback: localStorage for older browsers
+    try {
+      localStorage.setItem(LS_SYNC, Date.now().toString());
+    } catch { /* ignore */ }
   }, []);
 
   const setBlogs = useCallback((data: BlogPost[]) => {
     setBlogsState(data);
     saveLS(LS_BLOGS, data);
+    bcRef.current?.postMessage({ type: 'blogs_updated', payload: data });
   }, []);
 
   const setReels = useCallback((data: Reel[]) => {
     setReelsState(data);
     saveLS(LS_REELS, data);
+    bcRef.current?.postMessage({ type: 'reels_updated', payload: data });
   }, []);
 
   const setReviews = useCallback((data: Review[]) => {
     setReviewsState(data);
     saveLS(LS_REVIEWS, data);
+    bcRef.current?.postMessage({ type: 'reviews_updated', payload: data });
   }, []);
 
-  // Real-time sync across tabs via storage event
+  // Real-time sync across tabs via storage event (fallback for older browsers)
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === LS_ROOMS) {
-        try {
-          const parsed = e.newValue ? JSON.parse(e.newValue) : loadRooms();
-          setRoomsState(parsed);
-        } catch { /* ignore */ }
+      if (e.key === LS_SYNC) {
+        // Another tab updated rooms — reload from IndexedDB with small delay
+        setTimeout(() => {
+          loadRoomsAsync().then((data) => {
+            setRoomsState(data);
+          });
+        }, 50);
       }
       if (e.key === LS_BLOGS && e.newValue) {
         try { setBlogsState(JSON.parse(e.newValue)); } catch { /* ignore */ }
